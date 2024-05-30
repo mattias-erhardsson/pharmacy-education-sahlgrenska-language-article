@@ -83,11 +83,6 @@ paste(nrow(input_df) - nrow(input_df_without_excluded),
 input_df %>% 
   count(Reason_For_Exclusion)
 
-################################## Export
-write_xlsx(input_df_without_excluded,
-           path = "input_df_without_excluded.xlsx")
-
-
 ################################## Descriptive statistics
 ## What proportion of students have 100% of possible credits?
 paste0(
@@ -1205,54 +1200,8 @@ for (i in 1:nrow(statistical_test_results)) {
   }
 }
 
-## Bootstrapping to compare correlations in figure 5.
-test_1_rho <- perform_statistical_test(data = processed_data,
-                         dependent_variable = "Percentage_Of_Possible_Credits_Achieved",
-                         independent_variable = "Swedish_Grade_Type_As_Ordinal_Variable",
-                         test_method = "spearman",
-                         filter_column = NULL,
-                         filter_values = NULL)[[2]]
+warnings() # It is just the missing values throwing errors
 
-test_2_rho <- perform_statistical_test(data = processed_data,
-                                   dependent_variable = "Percentage_Of_Possible_Credits_Achieved",
-                                   independent_variable = "Language_Assessment_Oral_Communication",
-                                   test_method = "spearman",
-                                   filter_column = NULL,
-                                   filter_values = NULL)[[2]]
-
-# Function for getting bootstrapped rho value from spearman
-bootstrap_correlation <- function(data,
-                                  dependent_variable_1,
-                                  independent_variable_1,
-                                  dependent_variable_2,
-                                  independent_variable_2,
-                                  test_method,
-                                  filter_column,
-                                  filter_values) {
-  sampled_data <- data[sample(nrow(data), replace = TRUE), ]
-  rho_1 <- perform_statistical_test(sampled_data,
-                                  dependent_variable_1,
-                                  independent_variable_1,
-                                  test_method,
-                                  filter_column,
-                                  filter_values)[[2]]
-  rho_2 <- perform_statistical_test(sampled_data,
-                                    dependent_variable_2,
-                                    independent_variable_2,
-                                    test_method,
-                                    filter_column,
-                                    filter_values)[[2]]
-  rho_difference <- rho_1 - rho_2
-  return(rho_difference)
-}
-
-rho_bootstrapped_differences <- replicate(n = 10000, expr = bootstrap_correlation(data = processed_data,
-                                                 dependent_variable_1 = "Percentage_Of_Possible_Credits_Achieved",
-                                                 independent_variable_1 = "Swedish_Grade_Type_As_Ordinal_Variable",
-                                                 dependent_variable_2 = "Percentage_Of_Possible_Credits_Achieved",
-                                                 independent_variable_2 = "Language_Assessment_Oral_Communication",
-                                                 test_method = "spearman",
-                                                 filter_column = NULL,
-                                                 filter_values = NULL))
-
-quantile(rho_bootstrapped_differences, c(0.025, 0.975))
+################################## Export data
+write_xlsx(x = processed_data,
+           path = "./output/tables/processed_data.xlsx")
